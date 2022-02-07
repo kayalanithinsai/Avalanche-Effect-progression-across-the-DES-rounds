@@ -1,4 +1,5 @@
 import random
+import string
 import matplotlib.pyplot as plt
 # -*- coding: utf8 -*-
 
@@ -247,14 +248,13 @@ def flip(bit_array, indices):
 
 
 # selects sz number of distinct sets of size hm from valid numbers
-def select_indices_groups(bit_array, hm, sz, flg=False):
+def select_indices_groups(hm, sz, flg=False):
     sample_space = []
-    for i in range(63):
-        if i % 8 and flg:
+    for ind in range(64):
+        if ind % 8 == 7 and flg:
             continue
         else:
-            sample_space.append(i)
-
+            sample_space.append(ind)
     indices_list = []
     indices = random.sample(sample_space, k=hm)
     indices.sort()
@@ -270,18 +270,16 @@ def select_indices_groups(bit_array, hm, sz, flg=False):
 # Generate sz number of new modified strings from pain text with particular hamming distance.
 def generate_strings(ref_text, hm, sz, flg=False):
     base_bit_array = string_to_bit_array(ref_text)
-    indices_list = select_indices_groups(base_bit_array, hm, sz, flg=flg)
-    # print(indices_list)
-
+    indices_list = select_indices_groups(hm, sz, flg=flg)
     res = []
     for indices in indices_list:
         flip(base_bit_array, indices)
         res.append(bit_array_to_string(base_bit_array))
         flip(base_bit_array, indices)
-    # print(res)
     return res
 
 
+# Find Hamming Distance between 2 rounds.
 def find_hm(round_1, round_2):
     hm_ans = 0
     for i in range(2):
@@ -292,13 +290,10 @@ def find_hm(round_1, round_2):
 
 
 if __name__ == '__main__':
-    key = "password"
-    text = "positive"
+    key = ''.join(random.choices(string.ascii_letters, k=8))
+    text = "password"
     d = des()
     r, rounds = d.encrypt(key, text)  # shape of rounds is 16 * 2 * 32
-    r2, rounds2 = d.decrypt(key, r)
-    print("Ciphered: %r" % r)
-    print("Deciphered: ", r2)
 
     # Generate 5 plain Texts with Hamming distance of 1 from the base string and plot the box plots.
     gen_plain_text_list = generate_strings(text, 1, 5)
@@ -314,7 +309,7 @@ if __name__ == '__main__':
     fig = plt.figure("5 Different Plaintexts")
     plt.xlabel("Rounds")
     plt.ylabel("Hamming Distance")
-    plt.boxplot(data_for_box_plot, )
+    plt.boxplot(data_for_box_plot)
     plt.show()
 
     # Generate 5 plain texts with Hamming distance of 1,2,3,4,5 from the base string.
@@ -336,8 +331,9 @@ if __name__ == '__main__':
     plt.ylabel("Hamming Distance")
     plt.boxplot(data_for_box_plot)
     plt.show()
+
     # Generate 5 secret keys with Hamming distance of 1 form base string.
-    gen_key_list = generate_strings(text, 1, 5, flg=True)
+    gen_key_list = generate_strings(key, 1, 5, flg=True)
     data_for_box_plot = []
     for i in range(16):
         data_for_box_plot.append([])
